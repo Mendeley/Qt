@@ -132,6 +132,8 @@ protected:
     QCoreGraphicsPaintEngine(QPaintEnginePrivate &dptr);
 
 private:
+    void updateCGClipPathFromPainterPath(const QPainterPath &p);
+
     static bool m_postRoutineRegistered;
     static CGColorSpaceRef m_genericColorSpace;
     static QHash<CGDirectDisplayID, CGColorSpaceRef> m_displayColorSpaceHash;
@@ -155,7 +157,7 @@ public:
         QPen pen;
         QBrush brush;
         uint clipEnabled : 1;
-        QRegion clip;
+        QPainterPath clip;
         QTransform transform;
    } current;
 

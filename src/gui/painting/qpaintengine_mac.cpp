@@ -644,7 +644,7 @@ QCoreGraphicsPaintEngine::updateState(const QPaintEngineState &state)
 
     if (flags & DirtyClipEnabled) {
         if (state.isClipEnabled())
-            updateClipPath(painter()->clipPath(), Qt::ReplaceClip);
+            updateClipPath(d->current.clip, Qt::ReplaceClip);
         else
             updateClipPath(QPainterPath(), Qt::NoClip);
     }
@@ -761,6 +761,27 @@ QCoreGraphicsPaintEngine::updateMatrix(const QTransform &transform)
     d->pixelSize = d->devicePixelSize(d->hd);
 }
 
+// set the CG clip path to the intersection of the current CG clip path
+// with 'p'
+void
+QCoreGraphicsPaintEngine::updateCGClipPathFromPainterPath(const QPainterPath &p)
+{
+    Q_D(QCoreGraphicsPaintEngine);
+    if(p.isEmpty()) {
+        CGRect rect = CGRectMake(0, 0, 0, 0);
+        CGContextClipToRect(d->hd, rect);
+    } else {
+        CGMutablePathRef path = qt_mac_compose_path(p);
+        CGContextBeginPath(d->hd);
+        CGContextAddPath(d->hd, path);
+        if(p.fillRule() == Qt::WindingFill)
+            CGContextClip(d->hd);
+        else
+            CGContextEOClip(d->hd);
+        CGPathRelease(path);
+    }
+}
+
 void
 QCoreGraphicsPaintEngine::updateClipPath(const QPainterPath &p, Qt::ClipOperation op)
 {
@@ -769,36 +790,24 @@ QCoreGraphicsPaintEngine::updateClipPath(const QPainterPath &p, Qt::ClipOperatio
     if(op == Qt::NoClip) {
         if(d->current.clipEnabled) {
             d->current.clipEnabled = false;
-            d->current.clip = QRegion();
+            d->current.clip = QPainterPath();
             d->setClip(0);
         }
     } else {
         if(!d->current.clipEnabled)
             op = Qt::ReplaceClip;
         d->current.clipEnabled = true;
-        QRegion clipRegion(p.toFillPolygon().toPolygon(), p.fillRule());
         if(op == Qt::ReplaceClip) {
-            d->current.clip = clipRegion;
+            d->current.clip = p;
             d->setClip(0);
-            if(p.isEmpty()) {
-                CGRect rect = CGRectMake(0, 0, 0, 0);
-                CGContextClipToRect(d->hd, rect);
-            } else {
-                CGMutablePathRef path = qt_mac_compose_path(p);
-                CGContextBeginPath(d->hd);
-                CGContextAddPath(d->hd, path);
-                if(p.fillRule() == Qt::WindingFill)
-                    CGContextClip(d->hd);
-                else
-                    CGContextEOClip(d->hd);
-                CGPathRelease(path);
-            }
+            updateCGClipPathFromPainterPath(p);
         } else if(op == Qt::IntersectClip) {
-            d->current.clip = d->current.clip.intersected(clipRegion);
-            d->setClip(&d->current.clip);
+            d->current.clip = d->current.clip.intersected(p);
+            updateCGClipPathFromPainterPath(p);
         } else if(op == Qt::UniteClip) {
-            d->current.clip = d->current.clip.united(clipRegion);
-            d->setClip(&d->current.clip);
+            d->current.clip = d->current.clip.united(p);
+            d->setClip(0);
+            updateCGClipPathFromPainterPath(d->current.clip);
         }
     }
 }
@@ -806,24 +815,9 @@ QCoreGraphicsPaintEngine::updateClipPath(const QPainterPath &p, Qt::ClipOperatio
 void
 QCoreGraphicsPaintEngine::updateClipRegion(const QRegion &clipRegion, Qt::ClipOperation op)
 {
-    Q_D(QCoreGraphicsPaintEngine);
-    Q_ASSERT(isActive());
-    if(op == Qt::NoClip) {
-        d->current.clipEnabled = false;
-        d->current.clip = QRegion();
-        d->setClip(0);
-    } else {
-        if(!d->current.clipEnabled)
-            op = Qt::ReplaceClip;
-        d->current.clipEnabled = true;
-        if(op == Qt::IntersectClip)
-            d->current.clip = d->current.clip.intersected(clipRegion);
-        else if(op == Qt::ReplaceClip)
-            d->current.clip = clipRegion;
-        else if(op == Qt::UniteClip)
-            d->current.clip = d->current.clip.united(clipRegion);
-        d->setClip(&d->current.clip);
-    }
+    QPainterPath path;
+    path.addRegion(clipRegion);
+    updateClipPath(path, op);
 }
 
 void
