@@ -133,6 +133,8 @@ protected:
     QCoreGraphicsPaintEngine(QPaintEnginePrivate &dptr);
 
 private:
+    void updateCGClipPathFromPainterPath(const QPainterPath &p);
+
     static bool m_postRoutineRegistered;
     static CGColorSpaceRef m_genericColorSpace;
     static QHash<QWidget*, CGColorSpaceRef> m_displayColorSpaceHash; // window -> color space
@@ -156,7 +158,7 @@ public:
         QPen pen;
         QBrush brush;
         uint clipEnabled : 1;
-        QRegion clip;
+        QPainterPath clip;
         QTransform transform;
    } current;
 
