@@ -647,17 +647,15 @@ QCoreGraphicsPaintEngine::updateState(const QPaintEngineState &state)
     if (flags & DirtyTransform)
         updateMatrix(state.transform());
 
-    if (flags & DirtyClipEnabled) {
-        if (state.isClipEnabled())
-            updateClipPath(d->current.clip, Qt::ReplaceClip);
-        else
-            updateClipPath(QPainterPath(), Qt::NoClip);
-    }
-
     if (flags & DirtyClipPath) {
         updateClipPath(state.clipPath(), state.clipOperation());
     } else if (flags & DirtyClipRegion) {
         updateClipRegion(state.clipRegion(), state.clipOperation());
+    } else if (flags & DirtyClipEnabled) {
+        if (state.isClipEnabled())
+            updateClipPath(d->current.clip, Qt::ReplaceClip);
+        else
+            updateClipPath(QPainterPath(), Qt::NoClip);
     }
 
     // If the clip has changed we need to update all other states
