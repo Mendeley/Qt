@@ -244,16 +244,26 @@ contains(DEFINES, ENABLE_VIDEO=1) {
                    $$PWD/WebCoreSupport/QTKitFullScreenVideoHandler.mm
 
         LIBS+= -framework Security -framework IOKit
+
+        # For Mendeley, link to the 'Leopard' version of libWebKitSystemInterface so that a build generated on OS X 10.7
+        # works on OS X 10.5.  The Apple config files allow a target version of Mac OS X to be specified
+        # and link to the appropriate library depending on that value (see WebKit/mac/Configurations/DebugRelease.xcconfig
+        # in upstream WebKit)
+
+        # Original Qt logic for selecting the WKSI library version:
+        #
         # We can know the Mac OS version by using the Darwin major version
-        DARWIN_VERSION = $$split(QMAKE_HOST.version, ".")
-        DARWIN_MAJOR_VERSION = $$first(DARWIN_VERSION)
-        equals(DARWIN_MAJOR_VERSION, "9") | contains(QMAKE_MAC_SDK, "/Developer/SDKs/MacOSX10.5.sdk") {
-            LIBS += $$SOURCE_DIR/../WebKitLibraries/libWebKitSystemInterfaceLeopard.a
-        } else: equals(DARWIN_MAJOR_VERSION, "10") | contains(QMAKE_MAC_SDK, "/Developer/SDKs/MacOSX10.6.sdk") {
-            LIBS += $$SOURCE_DIR/../WebKitLibraries/libWebKitSystemInterfaceSnowLeopard.a
-        } else: equals(DARWIN_MAJOR_VERSION, "11") | contains(QMAKE_MAC_SDK, "/Developer/SDKs/MacOSX10.7.sdk") {
-            LIBS += $$SOURCE_DIR/../WebKitLibraries/libWebKitSystemInterfaceLion.a
-        }
+        #DARWIN_VERSION = $$split(QMAKE_HOST.version, ".")
+        #DARWIN_MAJOR_VERSION = $$first(DARWIN_VERSION)
+        #equals(DARWIN_MAJOR_VERSION, "9") | contains(QMAKE_MAC_SDK, "/Developer/SDKs/MacOSX10.5.sdk") {
+        #    LIBS += $$SOURCE_DIR/../WebKitLibraries/libWebKitSystemInterfaceLeopard.a
+        #} else: equals(DARWIN_MAJOR_VERSION, "10") | contains(QMAKE_MAC_SDK, "/Developer/SDKs/MacOSX10.6.sdk") {
+        #    LIBS += $$SOURCE_DIR/../WebKitLibraries/libWebKitSystemInterfaceSnowLeopard.a
+        #} else: equals(DARWIN_MAJOR_VERSION, "11") | contains(QMAKE_MAC_SDK, "/Developer/SDKs/MacOSX10.7.sdk") {
+        #    LIBS += $$SOURCE_DIR/../WebKitLibraries/libWebKitSystemInterfaceLion.a
+        #}
+
+        LIBS += $$SOURCE_DIR/../WebKitLibraries/libWebKitSystemInterfaceLeopard.a
     }
 }
 
