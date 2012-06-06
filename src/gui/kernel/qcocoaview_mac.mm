@@ -821,6 +821,17 @@ static int qCocoaViewCount = 0;
     return [NSActionCell class];
 }
 
+// The documentation for [NSView needsPanelToBecomeKey] is not particularly clear,
+// but it needs to return YES for the view to gain focus when clicked with the mouse
+// or to be tabbed to from a native Cocoa view.
+//
+// see http://www.cocoabuilder.com/archive/cocoa/55629-newbieq-why-can-i-have-customview-as-an-initalresponder.html
+// and [WebHTMLView needsPanelToBecomeKey] and EventHandler::passMouseDownEventToWidget() in WebKit.
+- (BOOL)needsPanelToBecomeKey
+{
+	return YES;
+}
+
 - (BOOL)acceptsFirstResponder
 {
     if (!qwidget)
