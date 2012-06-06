@@ -842,17 +842,22 @@ static int qCocoaViewCount = 0;
     if (!qwidget->isEnabled())
         return NO;
 
+    // When alien widgets are enabled, the user may have clicked in
+    // a focusable alien-child, even though this (native) widget is
+    // not focusable.
+    //
+    // As a simple but incomplete solution, when alien-widgets are enabled, we make
+    // all native Cocoa views focusable.
+    if (!QApplication::testAttribute(Qt::AA_NativeWindows)) {
+        return YES;
+    }
+
     if (qwidget->isWindow() && !qt_widget_private(qwidget)->topData()->embedded) {
         QWidget *focusWidget = qApp->focusWidget();
         if (!focusWidget) {
             // There is no focus widget, but we still want to receive key events
             // for shortcut handling etc. So we accept first responer for the
             // content view as a last resort:
-            return YES;
-        }
-        if (!focusWidget->internalWinId() && focusWidget->nativeParentWidget() == qwidget) {
-            // The current focus widget is alien, and hence, cannot get acceptsFirstResponder
-            // calls. Since the focus widget is a child of qwidget, we let this view say YES:
             return YES;
         }
         if (focusWidget->window() != qwidget) {
