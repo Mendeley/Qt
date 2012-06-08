@@ -70,8 +70,9 @@ QT_USE_NAMESPACE
 - (QWidget *)QT_MANGLE_NAMESPACE(qt_qwidget)
 {
     QWidget *widget = 0;
-    if ([self delegate] == [QT_MANGLE_NAMESPACE(QCocoaWindowDelegate) sharedDelegate])
-        widget = [[QT_MANGLE_NAMESPACE(QCocoaWindowDelegate) sharedDelegate] qt_qwidgetForWindow:self];
+	if ([[self delegate] respondsToSelector:@selector(qt_qwidgetForWindow:)]) {
+        widget = [[self delegate] qt_qwidgetForWindow:self];
+	}
     return widget;
 }
 
