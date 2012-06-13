@@ -5490,7 +5490,12 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
 
     Q_Q(QWidget);
 #ifndef QT_NO_GRAPHICSEFFECT
-    if (graphicsEffect && graphicsEffect->isEnabled()) {
+	bool useGraphicsEffect = graphicsEffect && graphicsEffect->isEnabled();
+#ifdef QT_MAC_USE_COCOA
+    // Graphics effects do not currently work on non-alien Cocoa widgets
+    useGraphicsEffect = useGraphicsEffect && !q->internalWinId();
+#endif
+    if (useGraphicsEffect) {
         QGraphicsEffectSource *source = graphicsEffect->d_func()->source;
         QWidgetEffectSourcePrivate *sourced = static_cast<QWidgetEffectSourcePrivate *>
                                                          (source->d_func());
@@ -5500,10 +5505,30 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
             if (!sharedPainter) {
                 QPaintEngine *paintEngine = pdev->paintEngine();
                 paintEngine->d_func()->systemClip = rgn.translated(offset);
-                QPainter p(pdev);
-                p.translate(offset);
-                context.painter = &p;
-                graphicsEffect->draw(&p);
+
+#ifdef Q_WS_MAC
+                // On Mac, painting can only begin within a paint event.  This follows
+				// the same pattern as for the redirection handling below to briefly
+				// enable the WA_WState_InPaintEvent flag whilst we do the painting.
+                QWidget* pdevWidget = pdev->devType() == QInternal::Widget ? static_cast<QWidget*>(pdev) : 0;
+                if (pdevWidget) {
+                    pdevWidget->setAttribute(Qt::WA_WState_InPaintEvent);
+                }
+#endif
+
+                {
+                    QPainter p(pdev);
+                    p.translate(offset);
+                    context.painter = &p;
+                    graphicsEffect->draw(&p);
+                }
+
+#ifdef Q_WS_MAC
+                if (pdevWidget) {
+                    pdevWidget->setAttribute(Qt::WA_WState_InPaintEvent, false);
+                }
+#endif
+
                 paintEngine->d_func()->systemClip = QRegion();
             } else {
                 context.painter = sharedPainter;
