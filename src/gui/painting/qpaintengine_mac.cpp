@@ -652,10 +652,18 @@ QCoreGraphicsPaintEngine::updateState(const QPaintEngineState &state)
     } else if (flags & DirtyClipRegion) {
         updateClipRegion(state.clipRegion(), state.clipOperation());
     } else if (flags & DirtyClipEnabled) {
-        if (state.isClipEnabled())
-            updateClipPath(d->current.clip, Qt::ReplaceClip);
-        else
-            updateClipPath(QPainterPath(), Qt::NoClip);
+        if (state.isClipEnabled()) {
+            // FIXME: QPainter::clipPath() currently wraps QPainter::clipRegion() and
+            // hence returns a non-antialiased region.
+            //
+            // This will result in the clip path becoming aliased when turning clipping
+            // off/on (eg. via QPainter::setClipping() or QPainter::save() / restore()
+            // if there are changes to the clip path between the save and the restore.)
+            updateClipPath(painter()->clipPath(), Qt::ReplaceClip);
+        } else {
+            d->current.clipEnabled = false;
+            d->setClip(0);
+        }
     }
 
     // If the clip has changed we need to update all other states
