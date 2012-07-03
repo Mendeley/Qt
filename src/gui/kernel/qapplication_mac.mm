@@ -1397,7 +1397,7 @@ void QApplication::restoreOverrideCursor()
 
 Qt::KeyboardModifiers QApplication::queryKeyboardModifiers()
 {
-    return qt_mac_get_modifiers(GetCurrentEventKeyModifiers());
+    return qt_mac_get_modifiers(GetCurrentKeyModifiers());
 }
 
 QWidget *QApplication::topLevelAt(const QPoint &p)
