@@ -716,18 +716,6 @@ NSString *qt_mac_removePrivateUnicode(NSString* string)
     return string;
 }
 
-Qt::KeyboardModifiers qt_cocoaDragOperation2QtModifiers(uint dragOperations)
-{
-    Qt::KeyboardModifiers qtMods =Qt::NoModifier;
-    if (dragOperations &  NSDragOperationLink)
-        qtMods |= Qt::MetaModifier;
-    if (dragOperations & NSDragOperationGeneric)
-        qtMods |= Qt::ControlModifier;
-    if (dragOperations & NSDragOperationCopy)
-        qtMods |= Qt::AltModifier;
-    return qtMods;
-}
-
 static inline QEvent::Type cocoaEvent2QtEvent(NSUInteger eventType)
 {
     // Handle the trivial cases that can be determined from the type.

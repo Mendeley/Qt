@@ -158,7 +158,6 @@ inline QApplication *qAppInstance() { return static_cast<QApplication *>(QCoreAp
 struct ::TabletProximityRec;
 void qt_dispatchTabletProximityEvent(const ::TabletProximityRec &proxRec);
 Qt::KeyboardModifiers qt_cocoaModifiers2QtModifiers(ulong modifierFlags);
-Qt::KeyboardModifiers qt_cocoaDragOperation2QtModifiers(uint dragOperations);
 QPixmap qt_mac_convert_iconref(const IconRef icon, int width, int height);
 void qt_mac_constructQIconFromIconRef(const IconRef icon, const IconRef overlayIcon, QIcon *retIcon,
                                       QStyle::StandardPixmap standardIcon = QStyle::SP_CustomBase);
