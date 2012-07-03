@@ -368,7 +368,7 @@ QT_END_NAMESPACE
         modifiers = QApplication::keyboardModifiers();
     } else {
         // when the source is from another application the above technique will not work.
-        modifiers = qt_cocoaDragOperation2QtModifiers(nsActions);
+        modifiers = QApplication::queryKeyboardModifiers();
     }
 
     // send the drag enter event to the widget.
@@ -459,7 +459,7 @@ QT_END_NAMESPACE
         QApplicationPrivate::modifier_buttons = qt_cocoaModifiers2QtModifiers([[[NSApplication sharedApplication] currentEvent] modifierFlags]);
         modifiers = QApplication::keyboardModifiers();
     } else {
-        modifiers = qt_cocoaDragOperation2QtModifiers(nsActions);
+        modifiers = QApplication::queryKeyboardModifiers();
     }
 
     QMimeData *mimeData = dropData;
