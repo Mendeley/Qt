@@ -268,7 +268,7 @@ QT_USE_NAMESPACE
         || [menuItem action] == @selector(unhideAllApplications:)) {
         return [NSApp validateMenuItem:menuItem];
     } else {
-        if ([menuItem action] == @selector(qtDispatcherToQAction:)) {
+        if ([menuItem action] == @selector(qtDispatcherToQAction:) && [menuItem tag]) {
             return reinterpret_cast<QAction*>([menuItem tag])->isEnabled();
         } else {
             return [menuItem isEnabled];
