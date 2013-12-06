@@ -71,7 +71,7 @@ QT_USE_NAMESPACE
 {
     QWidget *widget = 0;
 	if ([[self delegate] respondsToSelector:@selector(qt_qwidgetForWindow:)]) {
-        widget = [[self delegate] qt_qwidgetForWindow:self];
+        widget = reinterpret_cast<QWidget*>([[self delegate] qt_qwidgetForWindow:self]);
 	}
     return widget;
 }
