@@ -253,14 +253,17 @@ contains(DEFINES, ENABLE_VIDEO=1) {
         # Original Qt logic for selecting the WKSI library version:
         #
         # We can know the Mac OS version by using the Darwin major version
-        #DARWIN_VERSION = $$split(QMAKE_HOST.version, ".")
-        #DARWIN_MAJOR_VERSION = $$first(DARWIN_VERSION)
-        #equals(DARWIN_MAJOR_VERSION, "9") | contains(QMAKE_MAC_SDK, "/Developer/SDKs/MacOSX10.5.sdk") {
+        DARWIN_VERSION = $$split(QMAKE_HOST.version, ".")
+        DARWIN_MAJOR_VERSION = $$first(DARWIN_VERSION)
+
+        #equals(DARWIN_MAJOR_VERSION, "9") | contains(QMAKE_MAC_SDK, ".*MacOSX10.5.sdk") {
         #    LIBS += $$SOURCE_DIR/../WebKitLibraries/libWebKitSystemInterfaceLeopard.a
-        #} else: equals(DARWIN_MAJOR_VERSION, "10") | contains(QMAKE_MAC_SDK, "/Developer/SDKs/MacOSX10.6.sdk") {
+        #} else: equals(DARWIN_MAJOR_VERSION, "10") | contains(QMAKE_MAC_SDK, ".*MacOSX10.6.sdk") {
         #    LIBS += $$SOURCE_DIR/../WebKitLibraries/libWebKitSystemInterfaceSnowLeopard.a
-        #} else: equals(DARWIN_MAJOR_VERSION, "11") | contains(QMAKE_MAC_SDK, "/Developer/SDKs/MacOSX10.7.sdk") {
+        #} else: equals(DARWIN_MAJOR_VERSION, "11") | contains(QMAKE_MAC_SDK, ".*MacOSX10.7.sdk") {
         #    LIBS += $$SOURCE_DIR/../WebKitLibraries/libWebKitSystemInterfaceLion.a
+        #} else: equals(DARWIN_MAJOR_VERSION, "12") | contains(QMAKE_MAC_SDK, ".*MacOSX10.8.sdk") {
+        #    LIBS += $$SOURCE_DIR/../WebKitLibraries/libWebKitSystemInterfaceMountainLion.a
         #}
 
         LIBS += $$SOURCE_DIR/../WebKitLibraries/libWebKitSystemInterfaceLeopard.a
@@ -305,7 +308,7 @@ contains(CONFIG, texmap) {
 
 !symbian-abld:!symbian-sbsv2 {
     modfile.files = $$moduleFile
-    modfile.path = $$[QMAKE_MKSPECS]/modules
+    modfile.path = $$[QT_INSTALL_DATA]/mkspecs/modules
 
     INSTALLS += modfile
 } else {
@@ -313,7 +316,7 @@ contains(CONFIG, texmap) {
 
     inst_modfile.commands = $$QMAKE_COPY ${QMAKE_FILE_NAME} ${QMAKE_FILE_OUT}
     inst_modfile.input = moduleFile
-    inst_modfile.output = $$[QMAKE_MKSPECS]/modules
+    inst_modfile.output = $$[QT_INSTALL_DATA]/mkspecs/modules
     inst_modfile.CONFIG = no_clean
 
     QMAKE_EXTRA_COMPILERS += inst_modfile
