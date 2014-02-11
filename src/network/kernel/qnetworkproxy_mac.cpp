@@ -229,12 +229,21 @@ QList<QNetworkProxy> macQueryInternal(const QNetworkProxyQuery &query)
         int enabled;
         if (CFNumberGetValue(pacEnabled, kCFNumberIntType, &enabled) && enabled) {
             // PAC is enabled
-            CFStringRef cfPacLocation = (CFStringRef)CFDictionaryGetValue(dict, kSCPropNetProxiesProxyAutoConfigURLString);
+        
+            // kSCPropNetProxiesProxyAutoConfigURLString returns the URL string
+            // as entered in the system proxy configuration dialog
+            CFStringRef pacLocationSetting = (CFStringRef)CFDictionaryGetValue(dict, kSCPropNetProxiesProxyAutoConfigURLString);
+            QCFType<CFStringRef> cfPacLocation = CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault, pacLocationSetting, NULL, NULL,
+                kCFStringEncodingUTF8);
 
 #if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
             if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5) {
                 QCFType<CFDataRef> pacData;
                 QCFType<CFURLRef> pacUrl = CFURLCreateWithString(kCFAllocatorDefault, cfPacLocation, NULL);
+                if (!pacUrl) {
+                    qWarning("Invalid PAC URL \"%s\"", qPrintable(QCFString::toQString(cfPacLocation)));
+                    return result;
+                }
                 SInt32 errorCode;
                 if (!CFURLCreateDataAndPropertiesFromResource(kCFAllocatorDefault, pacUrl, &pacData, NULL, NULL, &errorCode)) {
                     QString pacLocation = QCFString::toQString(cfPacLocation);
