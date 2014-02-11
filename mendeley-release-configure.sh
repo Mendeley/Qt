@@ -16,9 +16,10 @@ fi
 LICENSE_ARGS="-opensource -confirm-license"
 COMPONENT_ARGS="-nomake examples -nomake demos -no-qt3support"
 CONFIGURE_ARGS="$BUILD_TYPE_ARGS $COMPONENT_ARGS $ARCH_ARGS -prefix /usr/local/Qt/$QT_VERSION $SDK_ARG $LICENSE_ARGS"
+SRC_DIR=$( dirname $0 )
 
 if [ "$#" -gt 0 ]; then
-  ./configure $CONFIGURE_ARGS "$@"
+  $SRC_DIR/configure $CONFIGURE_ARGS "$@"
 else
-  ./configure $CONFIGURE_ARGS
+  $SRC_DIR/configure $CONFIGURE_ARGS
 fi
