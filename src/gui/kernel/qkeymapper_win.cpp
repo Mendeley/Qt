@@ -773,8 +773,11 @@ extern bool qt_use_rtl_extensions;
 QList<int> QKeyMapperPrivate::possibleKeys(QKeyEvent *e)
 {
     QList<int> result;
+    const quint32 nativeVirtualKey = e->nativeVirtualKey();
+    if (nativeVirtualKey > 255)
+        return result;
 
-    KeyboardLayoutItem *kbItem = keyLayout[e->nativeVirtualKey()];
+    KeyboardLayoutItem *kbItem = keyLayout[nativeVirtualKey];
     if(!kbItem)
         return result;
 
@@ -803,8 +806,11 @@ bool QKeyMapperPrivate::translateKeyEvent(QWidget *widget, const MSG &msg, bool 
     bool k0 = false;
     bool k1 = false;
     int  msgType = msg.message;
-    // Add this key to the keymap if it is not present yet.
-    updateKeyMap(msg);
+    // WM_(IME_)CHAR messages already contain the character in question so there is
+    // no need to fiddle with our key map. In any other case add this key to the
+    // keymap if it is not present yet.
+    if (msg.message != WM_CHAR && msg.message != WM_IME_CHAR)
+        updateKeyMap(msg);
 
     const quint32 scancode = (msg.lParam >> 16) & scancodeBitmask;
     const quint32 vk_key = msg.wParam;
