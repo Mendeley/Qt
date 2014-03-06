@@ -177,7 +177,18 @@ namespace WTF {
     template<typename T, typename U, typename V>
     inline pair<typename HashSet<T, U, V>::iterator, bool> HashSet<T, U, V>::add(const ValueType& value)
     {
+        // work around compile issue with MSVC 2012/2013 not being able
+        // to automatically convert the first argument of the pair to
+        // HashTableConstIteratorAdapter from HashTableIterator
+        //
+        // See http://qt-project.org/forums/viewthread/29038
+#if _MSC_VER
+        typedef typename HashSet<T,U,V>::iterator iterator_type;
+        auto& result = m_impl.add(value);
+        return make_pair(static_cast<iterator_type>(result.first), result.second);
+#else
         return m_impl.add(value);
+#endif
     }
 
     template<typename Value, typename HashFunctions, typename Traits>
@@ -186,7 +197,16 @@ namespace WTF {
     HashSet<Value, HashFunctions, Traits>::add(const T& value)
     {
         typedef HashSetTranslatorAdapter<ValueType, ValueTraits, T, HashTranslator> Adapter;
+
+        // work around compile issue with MSVC 2012/2013
+        // see 'add(const ValueType&)' above for explanation
+#if _MSC_VER
+        typedef typename HashSet<Value, HashFunctions, Traits>::iterator iterator_type;
+        auto& result = m_impl.template addPassingHashCode<T, T, Adapter>(value, value);
+        return make_pair(static_cast<iterator_type>(result.first), result.second);
+#else
         return m_impl.template addPassingHashCode<T, T, Adapter>(value, value);
+#endif
     }
 
     template<typename T, typename U, typename V>
