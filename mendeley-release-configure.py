@@ -10,8 +10,13 @@
 # Windows: Visual Studio, nasm, OpenSSL (see comments below)
 
 from __future__ import print_function
+import argparse
 import os
 import sys
+
+parser = argparse.ArgumentParser('Configure Qt for use with Mendeley Desktop')
+parser.add_argument('--x64-only', help='Build for 64bit only on Mac', action='store_true', dest='x64_only')
+opts = parser.parse_args()
 
 QT_VERSION="4.8.6"
 
@@ -49,7 +54,8 @@ if sys.platform == 'darwin':
     # Release builds need to support 32 and 64bit Intel Macs.
     # For local development builds, x64 only will be faster
     config_args += ['-arch x86_64']
-    config_args += ['-arch x86']
+    if not opts.x64_only:
+        config_args += ['-arch x86']
     config_args += ['-debug-and-release']
 
 # Spec args
