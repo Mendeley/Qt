@@ -1383,6 +1383,10 @@ Qt::DropAction QDragManager::drag(QDrag *o)
         source:theView
         slideBack:YES];
 
+    // update the mouse button state when dragging ends as no
+    // mouse release event will be received after DND completes
+    QApplicationPrivate::mouse_buttons &= ~Qt::LeftButton;
+
     // Reset the implicit grab widget when drag ends because we will not
     // receive the mouse release event when DND is active:
     qt_button_down = 0;
