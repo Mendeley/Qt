@@ -47,7 +47,7 @@ if sys.platform == 'win32':
         print('OpenSSL build not found in %s' % openssl_inc_path, file=sys.stderr)
         sys.exit(1)
 
-    config_args += ['-openssl', '-I %s' % openssl_inc_path, '-L %s' % openssl_lib_path]
+    config_args += ['-openssl-linked', '-I %s' % openssl_inc_path, '-L %s' % openssl_lib_path]
 
 # OS X arch args
 if sys.platform == 'darwin':
@@ -56,7 +56,7 @@ if sys.platform == 'darwin':
     config_args += ['-arch x86_64']
     if not opts.x64_only:
         config_args += ['-arch x86']
-    config_args += ['-debug-and-release']
+    config_args += ['-debug-and-release', '-openssl-linked']
 
 # Spec args
 if sys.platform == 'win32':
