@@ -18,7 +18,7 @@ parser = argparse.ArgumentParser('Configure Qt for use with Mendeley Desktop')
 parser.add_argument('--x64-only', help='Build for 64bit only on Mac', action='store_true', dest='x64_only')
 opts = parser.parse_args()
 
-QT_VERSION="4.8.6"
+QT_VERSION="4.8.7"
 
 config_args = []
 
