@@ -919,6 +919,9 @@ namespace QT_NAMESPACE {}
 //  MSVC's library has std::initializer_list, but the compiler does not support the braces initialization
 //#      define Q_COMPILER_INITIALIZER_LISTS
 #    endif
+#    if _MSC_FULL_VER >= 180030324 // VC 12 SP 2 RC
+#      define Q_COMPILER_INITIALIZER_LISTS
+#    endif /* VC 12 SP 2 RC */
 #  endif
 #endif
 
