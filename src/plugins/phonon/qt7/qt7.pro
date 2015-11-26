@@ -2,15 +2,11 @@ QT += opengl phonon
 TARGET = phonon_qt7
 DESTDIR = $$QT_BUILD_TREE/plugins/phonon_backend
 
-# The Quicktime framework is only awailable for 32-bit builds, so we
-# need to check for this before linking against it.
-# QMAKE_MAC_XARCH is not awailable on Tiger, but at the same time,
-# we never build for 64-bit architechtures on Tiger either:
-contains(QMAKE_MAC_XARCH, no) {
-    LIBS += -framework QuickTime
-} else {
-    LIBS += -Xarch_i386 -framework QuickTime -Xarch_ppc -framework QuickTime
-}
+# QUICKTIME_C_API_AVAILABLE is true only on i386
+# so make sure to link QuickTime
+#contains(QMAKE_HOST.arch, i386) {
+     LIBS += -framework QuickTime
+#}
 
 LIBS += -framework AppKit -framework AudioUnit \
 	-framework AudioToolbox -framework CoreAudio \
