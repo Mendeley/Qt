@@ -14,40 +14,54 @@ import argparse
 import os
 import sys
 
-parser = argparse.ArgumentParser('Configure Qt for use with Mendeley Desktop')
+QT_VERSION="4.8.7"
+OPENSSL_VERSION="1.0.2d"
+
+parser = argparse.ArgumentParser('Configure Qt 4 for use with Mendeley Desktop')
 parser.add_argument('--x64-only', help='Build for 64bit only on Mac', action='store_true', dest='x64_only')
 opts = parser.parse_args()
 
-QT_VERSION="4.8.7"
-
-config_args = []
-
-# License args
-config_args += ['-opensource', '-confirm-license']
-
-# Component args
-config_args += ['-nomake examples', '-nomake demos', '-no-qt3support']
-config_args += ['-webkit']
-
-# OpenSSL support on Windows.
-#
-# OpenSSL is not included as part of Qt and needs to be installed separately
-# as follows:
-#  1. Get the source for current stable version from openssl.org/source
-#  2. Untar and follow the instructions in the INSTALL.W32 file
-#     to build with MSVC, setting the prefix to C:\Qt\openssl
-#  3. Verify that the libraries and includes were installed to the expected
-#     locations
 if sys.platform == 'win32':
-    openssl_inc_path = 'C:\Qt\openssl\include'
-    openssl_lib_path = 'C:\Qt\openssl\lib'
+    staging_dir = 'c:\mendeley\desktop'
+    configure_script = 'configure.exe'
+else:
+    staging_dir = '/mendeley/desktop'
+    configure_script = 'configure'
 
-    if not os.path.exists(openssl_inc_path) or \
-       not os.path.exists(openssl_lib_path):
-        print('OpenSSL build not found in %s' % openssl_inc_path, file=sys.stderr)
+destdir = os.path.join(staging_dir, 'Qt', QT_VERSION)
+
+# basic arguments:
+config_args = [
+    '-opensource',
+    '-confirm-license',
+    '-nomake examples',
+    '-nomake demos',
+    '-no-qt3support',
+    '-webkit',
+    '-prefix',
+    destdir]
+
+
+# Adding SSL:
+if sys.platform in ['win32', 'darwin']:
+    openssl_path = os.path.join(staging_dir, 'openssl', OPENSSL_VERSION)
+
+    if not os.path.exists(openssl_path):
+        print('OpenSSL build not found in %s' % openssl_path, file=sys.stderr)
         sys.exit(1)
 
-    config_args += ['-openssl-linked', '-I %s' % openssl_inc_path, '-L %s' % openssl_lib_path]
+    link_type = ''
+    if sys.platform == 'win32':
+        link_type = '-linked'
+        os.environ['OPENSSL_LIBS'] = '-L%s -lssl -lcrypto' % os.path.join(openssl_path, 'lib')
+
+    config_args += [
+        '-openssl%s' % link_type,
+        '-I',
+        os.path.join(openssl_path, 'include')]
+
+else:
+    config_args += ['-openssl']
 
 # OS X arch args
 if sys.platform == 'darwin':
@@ -56,25 +70,19 @@ if sys.platform == 'darwin':
     config_args += ['-arch x86_64']
     if not opts.x64_only:
         config_args += ['-arch x86']
-    config_args += ['-debug-and-release', '-openssl-linked']
+    config_args += [
+        '-debug-and-release',
+        '-platform',
+        'unsupported/macx-clang']
 
 # Spec args
 if sys.platform == 'win32':
-    config_args += ['-platform win32-msvc2013']
+    config_args += [
+        '-platform',
+        'win32-msvc2013']
 
-# Prefix arg
-prefix = ''
-config_script = 'configure'
-
-if sys.platform == 'win32':
-    config_script = 'configure.exe'
-    prefix = 'C:/Qt/%s' % QT_VERSION
-else:
-    prefix = '/usr/local/Qt/%s' % QT_VERSION
-
-config_args += ['-prefix %s' % prefix]
 src_dir = os.path.dirname(__file__)
-config_cmd = '%s/%s %s' % (src_dir, config_script, " ".join(config_args))
+config_cmd = '%s %s' % (os.path.join(src_dir, configure_script), " ".join(config_args))
 
 print("Running '%s'" % config_cmd)
-os.system(config_cmd)
+#os.system(config_cmd)
