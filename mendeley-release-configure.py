@@ -15,7 +15,7 @@ import os
 import sys
 
 QT_VERSION="4.8.7"
-OPENSSL_VERSION="1.0.2d"
+OPENSSL_VERSION="1.0.2f"
 
 parser = argparse.ArgumentParser('Configure Qt 4 for use with Mendeley Desktop')
 parser.add_argument('--x64-only', help='Build for 64bit only on Mac', action='store_true', dest='x64_only')
@@ -25,7 +25,7 @@ if sys.platform == 'win32':
     staging_dir = 'c:\mendeley\desktop'
     configure_script = 'configure.exe'
 else:
-    staging_dir = '/mendeley/desktop'
+    staging_dir = '/opt/mendeley/desktop'
     configure_script = 'configure'
 
 destdir = os.path.join(staging_dir, 'Qt', QT_VERSION)
@@ -43,25 +43,16 @@ config_args = [
 
 
 # Adding SSL:
-if sys.platform in ['win32', 'darwin']:
-    openssl_path = os.path.join(staging_dir, 'openssl', OPENSSL_VERSION)
+openssl_path = os.path.join(staging_dir, 'openssl', OPENSSL_VERSION)
+os.environ['OPENSSL_LIBS'] = '-L%s -lssl -lcrypto' % os.path.join(openssl_path, 'lib')
+if not os.path.exists(openssl_path):
+    print('OpenSSL build not found in %s' % openssl_path, file=sys.stderr)
+    sys.exit(1)
 
-    if not os.path.exists(openssl_path):
-        print('OpenSSL build not found in %s' % openssl_path, file=sys.stderr)
-        sys.exit(1)
-
-    link_type = ''
-    if sys.platform == 'win32':
-        link_type = '-linked'
-        os.environ['OPENSSL_LIBS'] = '-L%s -lssl -lcrypto' % os.path.join(openssl_path, 'lib')
-
-    config_args += [
-        '-openssl%s' % link_type,
-        '-I',
-        os.path.join(openssl_path, 'include')]
-
-else:
-    config_args += ['-openssl']
+config_args += [
+    '-openssl-linked',
+    '-I',
+    os.path.join(openssl_path, 'include')]
 
 # OS X arch args
 if sys.platform == 'darwin':
@@ -85,4 +76,4 @@ src_dir = os.path.dirname(__file__)
 config_cmd = '%s %s' % (os.path.join(src_dir, configure_script), " ".join(config_args))
 
 print("Running '%s'" % config_cmd)
-#os.system(config_cmd)
+os.system(config_cmd)
